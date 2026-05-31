@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>solano-wx</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="/static/dashboard/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">brasil-weather-api</p>
+      <h1>solano-wx</h1>
+    </div>
+    <div class="ws-pill" id="ws-indicator">🔴 Desconectado</div>
+  </header>
+
+  <main class="layout">
+    <section class="left-column">
+      <div class="search-card">
+        <div class="search-row">
+          <input id="cidade-input" type="text" placeholder="Digite uma cidade, ex: Fortaleza">
+          <button id="buscar-btn" type="button">Buscar</button>
+          <div class="spinner" id="loading" aria-hidden="true"></div>
+        </div>
+        <p class="hint">Use a busca para carregar clima, previsão, mapa e WebSocket ao vivo.</p>
+      </div>
+
+      <article class="weather-card">
+        <div class="weather-header">
+          <div>
+            <p class="card-label">Clima atual</p>
+            <h2 id="clima-cidade">Sem dados</h2>
+            <p id="clima-uf" class="muted">UF: --</p>
+          </div>
+          <div class="weather-icon" id="clima-icon">🌡️</div>
+        </div>
+        <div class="temperature" id="clima-temp">--°</div>
+        <div class="weather-grid">
+          <div><span class="metric-label">Mínima</span><strong id="clima-min">--°</strong></div>
+          <div><span class="metric-label">Máxima</span><strong id="clima-max">--°</strong></div>
+          <div><span class="metric-label">Umidade</span><strong id="clima-umidade">--%</strong></div>
+          <div><span class="metric-label">Vento</span><strong id="clima-vento">-- km/h</strong></div>
+        </div>
+        <p id="clima-condicao" class="condition">--</p>
+      </article>
+
+      <section class="stats-card">
+        <div class="section-head">
+          <p class="card-label">Estatísticas da API</p>
+          <span class="muted" id="stats-updated">Atualizando...</span>
+        </div>
+        <div class="stats-grid">
+          <div>
+            <span class="metric-label">Uptime</span>
+            <strong id="stat-uptime">--</strong>
+          </div>
+          <div>
+            <span class="metric-label">Cache hit rate</span>
+            <strong id="stat-hit-rate">--</strong>
+          </div>
+          <div>
+            <span class="metric-label">Entradas</span>
+            <strong id="stat-entradas">--</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="history-card">
+        <div class="section-head">
+          <p class="card-label">Histórico</p>
+          <span class="muted">Últimas 5 cidades</span>
+        </div>
+        <ul id="historico-list" class="history-list"></ul>
+      </section>
+    </section>
+
+    <section class="right-column">
+      <div class="panel">
+        <div class="section-head">
+          <p class="card-label">Mapa</p>
+          <span class="muted">OpenStreetMap + Leaflet</span>
+        </div>
+        <div id="map" class="map-box"></div>
+      </div>
+
+      <div class="panel">
+        <div class="section-head">
+          <p class="card-label">Previsão 7 dias</p>
+          <span class="muted">Chart.js</span>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="chart"></canvas>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/static/dashboard/app.js"></script>
+</body>
+</html>
