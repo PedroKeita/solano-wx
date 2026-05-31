@@ -14,6 +14,12 @@ type HealthResponse struct {
 	Uptime string           `json:"uptime"`
 }
 
+// @Summary     Health check da API
+// @Description Retorna status, estatísticas do cache e uptime
+// @Tags        infra
+// @Produce     json
+// @Success     200  {object}  HealthResponse
+// @Router      /health [get]
 func NewHealthHandler(c *cache.Cache, startTime time.Time) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")

@@ -1,4 +1,4 @@
-package cache_test
+package handlers_test
 
 import (
 	"sync"
