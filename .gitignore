@@ -1,0 +1,34 @@
+# Binaries
+/brasil-weather-api
+/brasil-weather-api.exe
+/bin/
+
+# Test and coverage outputs
+/coverage.out
+*.test
+*.out
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# AI context markdowns
+task.spec.md
+docs/service-context.md
+ai-context.md
+
+# Go workspace files
+go.work
+go.work.sum
+
+# Editor and OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs and temp files
+*.log
+/tmp/
+/temp/
