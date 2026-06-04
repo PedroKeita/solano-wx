@@ -58,7 +58,12 @@ func buscarClimaAtual(cidade string, c *cache.Cache, ttl time.Duration) (*Weathe
 		}
 	}
 
-	city, err := BuscarCidadeFn(cidade)
+	depsMu.RLock()
+	cityFn := BuscarCidadeFn
+	climaFn := BuscarClimaFn
+	depsMu.RUnlock()
+
+	city, err := cityFn(cidade)
 	if err != nil {
 		if err == ErrCidadeNaoEncontrada {
 			return nil, "", err
@@ -66,7 +71,7 @@ func buscarClimaAtual(cidade string, c *cache.Cache, ttl time.Duration) (*Weathe
 		return nil, "", ErrServicoIndisponivel
 	}
 
-	weather, err := BuscarClimaFn(city.Latitude, city.Longitude)
+	weather, err := climaFn(city.Latitude, city.Longitude)
 	if err != nil {
 		return nil, "", ErrServicoIndisponivel
 	}

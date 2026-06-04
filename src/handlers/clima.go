@@ -5,12 +5,15 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 	"unicode"
 
 	"solano-wx/src/cache"
 	"solano-wx/src/services"
 )
+
+var depsMu sync.RWMutex
 
 var (
 	ErrCidadeNaoEncontrada = services.ErrCidadeNaoEncontrada
@@ -74,12 +77,14 @@ var (
 )
 
 func SetClimaDependencies(cityFn cidadeLookupFunc, climaFn climaLookupFunc) {
+	depsMu.Lock()
 	if cityFn != nil {
 		BuscarCidadeFn = cityFn
 	}
 	if climaFn != nil {
 		BuscarClimaFn = climaFn
 	}
+	depsMu.Unlock()
 }
 
 // @Summary     Clima atual de uma cidade
@@ -95,6 +100,11 @@ func SetClimaDependencies(cityFn cidadeLookupFunc, climaFn climaLookupFunc) {
 func NewClimaHandler(c *cache.Cache, ttlClima time.Duration) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
+
+		depsMu.RLock()
+		cityFn := BuscarCidadeFn
+		climaFn := BuscarClimaFn
+		depsMu.RUnlock()
 
 		cidade := strings.TrimSpace(r.PathValue("cidade"))
 		if isInvalidCidade(cidade) {
@@ -115,7 +125,7 @@ func NewClimaHandler(c *cache.Cache, ttlClima time.Duration) http.HandlerFunc {
 			}
 		}
 
-		city, err := BuscarCidadeFn(cidade)
+		city, err := cityFn(cidade)
 		if err != nil {
 			if errors.Is(err, ErrCidadeNaoEncontrada) {
 				writeJSONError(w, http.StatusNotFound, "cidade não encontrada")
@@ -126,7 +136,7 @@ func NewClimaHandler(c *cache.Cache, ttlClima time.Duration) http.HandlerFunc {
 			return
 		}
 
-		weather, err := BuscarClimaFn(city.Latitude, city.Longitude)
+		weather, err := climaFn(city.Latitude, city.Longitude)
 		if err != nil {
 			writeJSONError(w, http.StatusServiceUnavailable, "serviço climático indisponível")
 			return
