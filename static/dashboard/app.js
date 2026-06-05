@@ -2,7 +2,6 @@
   const inputCidade = document.getElementById('cidade-input');
   const buscarBtn = document.getElementById('buscar-btn');
   const loading = document.getElementById('loading');
-  const wsIndicator = document.getElementById('ws-indicator');
   const historicoList = document.getElementById('historico-list');
   const statUptime = document.getElementById('stat-uptime');
   const statHitRate = document.getElementById('stat-hit-rate');
@@ -18,7 +17,6 @@
   const climaVento = document.getElementById('clima-vento');
   const climaCondicao = document.getElementById('clima-condicao');
 
-  let wsAtual = null;
   let map = null;
   let markerAtual = null;
   let chart = null;
@@ -71,10 +69,6 @@
     const atualizado = [cidade, ...historicoAtual.filter((item) => item !== cidade)].slice(0, 5);
     localStorage.setItem('historico', JSON.stringify(atualizado));
     renderizarHistorico();
-  }
-
-  function atualizarIndicadorWS(conectado) {
-    wsIndicator.textContent = conectado ? '🟢 Conectado' : '🔴 Desconectado';
   }
 
   function exibeClima(data) {
@@ -193,34 +187,6 @@
     markerAtual.bindPopup(cidade).openPopup();
   }
 
-  function conectarWS(nome) {
-    if (wsAtual) {
-      wsAtual.close();
-      wsAtual = null;
-    }
-
-    if (!nome) {
-      atualizarIndicadorWS(false);
-      return;
-    }
-
-    wsAtual = new WebSocket(`ws://${window.location.host}/api/v1/ws/clima/${encodeURIComponent(nome)}`);
-
-    wsAtual.onopen = () => atualizarIndicadorWS(true);
-    wsAtual.onclose = () => atualizarIndicadorWS(false);
-    wsAtual.onerror = () => atualizarIndicadorWS(false);
-    wsAtual.onmessage = (event) => {
-      try {
-        const payload = JSON.parse(event.data);
-        if (payload && payload.evento === 'clima_atualizado') {
-          exibeClima(payload.dados);
-        }
-      } catch (error) {
-        void error;
-      }
-    };
-  }
-
   function buscarCidade(nome) {
     const cidade = String(nome || '').trim();
     if (!cidade) {
@@ -240,11 +206,9 @@
         exibeClima(data);
         centralizaMapa(data.latitude, data.longitude, data.cidade);
         buscarPrevisao(cidade);
-        conectarWS(cidade);
         salvarHistorico(cidade);
       })
       .catch(() => {
-        atualizarIndicadorWS(false);
       })
       .finally(() => {
         toggleLoading(false);
@@ -276,14 +240,7 @@
     buscarCidade(inputCidade.value.trim());
   });
 
-  window.addEventListener('beforeunload', () => {
-    if (wsAtual) {
-      wsAtual.close();
-    }
-  });
-
   renderizarHistorico();
-  atualizarIndicadorWS(false);
   atualizarStats();
   setInterval(atualizarStats, 30000);
 })();

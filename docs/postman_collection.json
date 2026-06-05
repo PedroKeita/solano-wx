@@ -97,6 +97,27 @@
       ]
     },
     {
+      "name": "Clima - Previsão",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/clima/Fortaleza/previsao"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Cidades - CE",
       "request": {
         "method": "GET",
@@ -140,6 +161,48 @@
               "pm.test('cidades length <= 5', function () {",
               "  const jsonData = pm.response.json();",
               "  pm.expect(jsonData.cidades.length).to.be.at.most(5);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cidades - UF inválida",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/cidades/123"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status 400', function () {",
+              "  pm.response.to.have.status(400);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cidades - UF não encontrada",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/cidades/XX"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status 404', function () {",
+              "  pm.response.to.have.status(404);",
               "});"
             ]
           }

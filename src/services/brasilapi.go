@@ -34,19 +34,6 @@ var localCities = map[string]models.CityData{
 	"belo horizonte": {Nome: "Belo Horizonte", UF: "MG", Latitude: -19.9167, Longitude: -43.9345},
 }
 
-var localCitiesByUF = map[string][]string{
-	"CE": {"Fortaleza", "Caucaia", "Sobral", "Juazeiro do Norte", "Maracanaú"},
-	"SP": {"São Paulo", "Campinas", "Santos", "Sorocaba", "Ribeirão Preto"},
-	"RJ": {"Rio de Janeiro", "Niterói", "Petrópolis", "Nova Iguaçu", "Duque de Caxias"},
-	"DF": {"Brasília", "Ceilândia", "Taguatinga", "Gama", "Sobradinho"},
-	"BA": {"Salvador", "Feira de Santana", "Vitória da Conquista", "Ilhéus", "Juazeiro"},
-	"PE": {"Recife", "Olinda", "Jaboatão dos Guararapes", "Caruaru", "Petrolina"},
-	"MG": {"Belo Horizonte", "Uberlândia", "Contagem", "Juiz de Fora", "Betim"},
-	"RS": {"Porto Alegre", "Caxias do Sul", "Pelotas", "Canoas", "Santa Maria"},
-	"PR": {"Curitiba", "Londrina", "Maringá", "Ponta Grossa", "Foz do Iguaçu"},
-	"AM": {"Manaus", "Parintins", "Itacoatiara", "Manacapuru", "Tefé"},
-}
-
 func BuscarCidade(nome string) (*models.CityData, error) {
 	normalized := normalize(nome)
 	if normalized == "" {
@@ -108,12 +95,6 @@ func ListarCidades(uf string) ([]string, error) {
 	uf = strings.ToUpper(strings.TrimSpace(uf))
 	if uf == "" {
 		return nil, ErrCidadeNaoEncontrada
-	}
-
-	if cities, ok := localCitiesByUF[uf]; ok {
-		result := make([]string, len(cities))
-		copy(result, cities)
-		return result, nil
 	}
 
 	endpoint := fmt.Sprintf("https://servicodados.ibge.gov.br/api/v1/localidades/estados/%s/municipios", url.PathEscape(uf))

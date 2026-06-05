@@ -12,7 +12,8 @@ API REST de dados climáticos e geográficos de cidades brasileiras.
 - [Instalação rápida](#instalação-rápida)
 - [Executando localmente](#executando-localmente)
 - [Variáveis de ambiente](#variáveis-de-ambiente)
-- [Endpoints principais](#endpoints-principais)
+- [Endpoints da API](#endpoints-da-api)
+- [Swagger e documentação](#swagger-e-documentação)
 - [Testes](#testes)
 - [Docker](#docker)
 - [CI](#ci)
@@ -22,7 +23,7 @@ API REST de dados climáticos e geográficos de cidades brasileiras.
 ## Pré-requisitos
 - Go 1.22+
 - Git
-- (Opcional) Docker / Docker Compose para rodar em container
+- (Opcional) Docker / Docker Compose
 
 ## Instalação rápida
 
@@ -34,75 +35,92 @@ go mod download
 
 ## Executando localmente
 
-- Execução rápida (hot reload manual):
-
 ```bash
-go run src/main.go
+go run ./src
 ```
 
-- Gerar binário e executar:
+Ou gere o binário e execute:
 
 ```bash
 go build -o solano-wx ./src
 ./solano-wx
 ```
 
-- Exemplo de chamada ao endpoint de clima (curl):
+Ao iniciar, o servidor sobe em `http://localhost:3000/docs` por padrão.
 
-```bash
-curl http://localhost:3000/api/v1/clima/Fortaleza
-```
-
-- Exemplo de conexão WebSocket (com wscat):
-
-```bash
-wscat -c ws://localhost:3000/api/v1/ws/clima/Fortaleza
-```
+Caso queira uma experiência melhor, acesse :`http://localhost:3000/dashboard`
 
 ## Variáveis de ambiente
-- `PORT` — porta onde o servidor irá escutar (padrão: `3000`)
-- `CACHE_TTL_CLIMA` — TTL (segundos) do cache de clima (padrão: `600`)
-- `CACHE_TTL_GEO` — TTL (segundos) do cache geográfico (padrão: `86400`)
+- `PORT` — porta do servidor (padrão: `3000`)
+- `CACHE_TTL_CLIMA` — TTL do cache de clima em segundos (padrão: `600`)
+- `CACHE_TTL_GEO` — TTL do cache geográfico em segundos (padrão: `86400`)
 
-## Endpoints principais
-- `GET /api/v1/clima/{cidade}` — clima atual da cidade
-- `GET /api/v1/cidades/{uf}` — lista de cidades por UF
-- `GET /api/v1/ws/clima/{cidade}` — WebSocket com atualizações periódicas de clima
-- `/dashboard` — UI estática do dashboard
-- `/static/` — arquivos estáticos
+## Endpoints da API
+
+### Saúde e interface
+- `GET /api/v1/health` — status da aplicação, cache e uptime
+- `GET /dashboard` — dashboard estático
+- `GET /static/` — arquivos estáticos do frontend
+
+### Clima
+- `GET /api/v1/clima/{cidade}` — clima atual de uma cidade
+- `GET /api/v1/clima/{cidade}/previsao` — previsão do tempo para a cidade
+
+### Cidades
+- `GET /api/v1/cidades/{uf}` — lista de municípios de uma UF via API do IBGE
+- Parâmetro opcional: `limite`
+
+Esse endpoint usa a API de localidades do IBGE para retornar as cidades reais do estado informado.
+
+## Swagger e documentação
+
+A documentação Swagger fica em:
+
+```text
+http://localhost:3000/docs/
+```
+
+Ao rodar `go run ./src`, o projeto também imprime esse link no terminal.
+
+Se a página abrir sem endpoints, confira se o serviço está rodando na porta correta e se o arquivo `docs/docs.go` foi atualizado com os paths da API.
+
+## Exemplos de teste
+
+```bash
+curl http://localhost:3000/api/v1/health
+curl http://localhost:3000/api/v1/clima/Fortaleza
+curl http://localhost:3000/api/v1/clima/Fortaleza/previsao
+curl http://localhost:3000/api/v1/cidades/CE
+curl "http://localhost:3000/api/v1/cidades/CE?limite=3"
+curl http://localhost:3000/api/v1/cidades/XX
+```
 
 ## Testes
 
-- Rodar todos os testes:
+Rodar a suíte:
 
 ```bash
 go test ./...
 ```
 
-- Rodar com detector de data-race (CI usa `-race`):
+Rodar com race detector:
 
 ```bash
 go test ./... -race
 ```
 
-Observações:
-- No Windows, `-race` pode requerer CGO. Se aparecer `go: -race requires cgo; enable cgo by setting CGO_ENABLED=1`, rode os testes no WSL ou habilite `CGO_ENABLED=1` e instale um compilador C.
-- Para gerar coverage localmente (opcional):
-
-```bash
-go test ./... -coverprofile=coverage.out
-go tool cover -func=coverage.out
-```
+Observação:
+- No Windows, `-race` pode exigir CGO habilitado. Se aparecer erro, rode no WSL ou use um ambiente Linux com compilador C.
 
 ## Docker
 
-- Build:
+Build da imagem:
 
 ```bash
 docker build -t solano-wx .
 ```
 
-- Rodar com Docker Compose:
+Subir com Compose:
 
 ```bash
 docker-compose up --build
@@ -110,64 +128,13 @@ docker-compose up --build
 
 ## CI
 
-O workflow de CI está em `.github/workflows/ci.yml`. Atualmente o pipeline executa testes e build; a checagem de coverage foi removida a pedido para não bloquear o fluxo.
+O workflow de CI está em `.github/workflows/ci.yml` e executa testes e build.
 
 ## Estrutura do projeto
 
-- `src/` — código fonte da API
-- `static/` — frontend estático do dashboard
-- `tests/` — testes de integração/funcionais
-- `Dockerfile`, `docker-compose.yml`, `Makefile` — arquivos de auxílio
+- `src/` — código da API
+- `docs/` — configuração do Swagger
+- `static/` — frontend estático
+- `tests/` — testes automatizados
 
-
-
-## Testes
-
-Rodar a suíte de testes:
-
-```bash
-go test ./...
-```
-
-Para rodar com detector de data-race (usado no CI):
-
-```bash
-go test ./... -race
-```
-
-Observação sobre `-race` no Windows:
-- O detector `-race` pode exigir CGO habilitado e um toolchain C. Se você receber `go: -race requires cgo; enable cgo by setting CGO_ENABLED=1`, execute os testes dentro do WSL ou habilite `CGO_ENABLED=1` e instale um compilador C.
-
-Cobertura (opcional):
-
-```bash
-go test ./... -coverprofile=coverage.out
-go tool cover -func=coverage.out
-```
-
-> Nota: o pipeline CI foi ajustado para não falhar por cobertura mínima — alteração feita para acelerar o fluxo.
-
-## Docker
-
-Build da imagem Docker:
-
-```bash
-docker build -t solano-wx .
-```
-
-Rodar com Docker Compose (se quiser):
-
-```bash
-docker-compose up --build
-```
-
-## CI
-
-O workflow de CI está em `.github/workflows/ci.yml` e atualmente executa testes e build. A geração/checagem de coverage foi removida conforme pedido.
-
-## Estrutura do projeto
-
-- `src/` — código fonte da API
-- `static/` — frontend estático do dashboard
-- `tests/` — testes de integração/funcionais
 
