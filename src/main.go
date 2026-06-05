@@ -14,6 +14,7 @@ import (
 
 	"solano-wx/src/cache"
 	"solano-wx/src/handlers"
+	"solano-wx/src/services"
 )
 
 func main() {
@@ -31,8 +32,8 @@ func main() {
 	mux.HandleFunc("/api/v1/health", handlers.NewHealthHandler(sharedCache, startTime))
 	mux.Handle("/api/v1/clima/{cidade}", handlers.NewClimaHandler(sharedCache, ttlClima))
 	mux.HandleFunc("/api/v1/clima/{cidade}/previsao", handlers.NewPrevisaoHandler())
+	handlers.SetCidadesDependencies(services.ListarCidades)
 	mux.Handle("/api/v1/cidades/{uf}", handlers.NewCidadesHandler(sharedCache, ttlGeo))
-	mux.Handle("/api/v1/ws/clima/{cidade}", handlers.NewWebSocketHandler(sharedCache, ttlClima))
 
 	server := &http.Server{
 		Addr:              ":" + strconv.Itoa(port),
@@ -41,6 +42,7 @@ func main() {
 	}
 
 	log.Printf("solano-wx listening on :%d", port)
+	log.Printf("docs available at http://localhost:%d/docs/", port)
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
