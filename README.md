@@ -17,7 +17,7 @@ API REST de dados climáticos e geográficos de cidades brasileiras.
 - [Docker](#docker)
 - [CI](#ci)
 - [Estrutura do projeto](#estrutura-do-projeto)
-- [Contribuição e contato](#contribuição-e-contato)
+
 
 ## Pré-requisitos
 - Go 1.22+
